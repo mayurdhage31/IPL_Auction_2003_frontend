@@ -19,6 +19,7 @@ export function useAuction() {
     running: false, progress: 0, current_run: 0, total_runs: 0, mode: '',
   });
   const [results, setResults] = useState<SimulationResult | null>(null);
+  const [simulationJustCompleted, setSimulationJustCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -64,7 +65,12 @@ export function useAuction() {
           clearInterval(pollRef.current!);
           pollRef.current = null;
           const res = await getLatestResults();
-          if (res.available) setResults(res as SimulationResult);
+          if (res.available) {
+            setResults(res as SimulationResult);
+            setSimulationJustCompleted(true);
+            // Reset the flag after a tick so AuctionPage can react once
+            setTimeout(() => setSimulationJustCompleted(false), 100);
+          }
           // Refresh auction state after simulation
           await loadState();
         }
@@ -94,9 +100,12 @@ export function useAuction() {
       if (mode === 'next_player') await simulateNextPlayer(nRuns);
       else if (mode === 'set') await simulateSet(nRuns);
       else await simulateFullAuction(nRuns);
+      // Immediately mark as running so buttons stay disabled before first poll fires
+      setSimStatus(s => ({ ...s, running: true, mode, total_runs: nRuns, current_run: 0, progress: 0 }));
       startPolling();
     } catch (e: any) {
-      setError(e.message);
+      const detail = (e as any)?.response?.data?.detail;
+      setError(detail ? `Simulation error: ${detail}` : e.message);
     } finally { setLoading(false); }
   }, [startPolling]);
 
@@ -123,6 +132,7 @@ export function useAuction() {
     selectedTeam, setSelectedTeam,
     squad,
     simStatus,
+    simulationJustCompleted,
     results,
     loading,
     error,

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import type {
   Player, TeamSquad, TeamInfo, AuctionState,
-  SimulationResult, SimulationStatus,
+  SimulationResult, SimulationStatus, PlayerDetail, PlayerSummary,
 } from '../types';
 
 const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api';
@@ -23,6 +23,12 @@ export const getCurrentPlayer = (): Promise<Player> =>
 
 export const advancePlayer = (): Promise<Player> =>
   api.post('/players/next').then(r => r.data);
+
+export const getPlayerDetail = (name: string): Promise<PlayerDetail> =>
+  api.get(`/players/${encodeURIComponent(name)}`).then(r => r.data);
+
+export const getPlayersForTeam = (teamCode: string): Promise<PlayerSummary[]> =>
+  api.get('/players', { params: { team: teamCode } }).then(r => r.data);
 
 // ── Auction state ──────────────────────────────────────────────────────────
 

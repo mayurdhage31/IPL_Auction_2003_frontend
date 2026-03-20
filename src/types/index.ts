@@ -99,3 +99,29 @@ export interface AuctionState {
 
 export type SimMode = 'next_player' | 'set' | 'full_auction';
 export type RunCount = 100 | 500 | 1000;
+
+export interface PlayerSummary {
+  name: string;
+  role: string;
+  origin: string;
+  set_type: string;
+  avg_price_cr: number;
+}
+
+export interface PlayerDetail extends Player {
+  max_price_cr: number | null;
+  latest_price_cr: number | null;
+  latest_year: number | null;
+  peak_year: number | null;
+  trajectory: string | null;
+  price_trend: number;
+  volatility: number;
+  auction_appearances: number;
+  total_teams: number;
+  batting_avg: number | null;
+  batting_sr: number | null;
+  total_runs: number | null;
+  wickets: number | null;
+  economy: number | null;
+  bowling_sr: number | null;
+}

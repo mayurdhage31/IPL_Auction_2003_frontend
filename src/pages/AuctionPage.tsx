@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuction } from '../hooks/useAuction';
 import NominationPanel from '../components/NominationPanel';
 import SimulationControls from '../components/SimulationControls';
 import ResultsChart from '../components/ResultsChart';
 import SquadPanel from '../components/SquadPanel';
 import RAGPanel from '../components/RAGPanel';
+import PlayerScoutPanel from '../components/PlayerScoutPanel';
 import type { SimMode, RunCount } from '../types';
 
-type LeftTab = 'console' | 'results' | 'rag';
+type LeftTab = 'console' | 'results' | 'rag' | 'scout';
 
 export default function AuctionPage() {
   const {
@@ -16,6 +17,7 @@ export default function AuctionPage() {
     selectedTeam, setSelectedTeam,
     squad,
     simStatus,
+    simulationJustCompleted,
     results,
     loading,
     error,
@@ -27,6 +29,13 @@ export default function AuctionPage() {
   } = useAuction();
 
   const [leftTab, setLeftTab] = useState<LeftTab>('console');
+
+  // Auto-switch to Results tab when a simulation finishes
+  useEffect(() => {
+    if (simulationJustCompleted) {
+      setLeftTab('results');
+    }
+  }, [simulationJustCompleted]);
 
   const selectedTeamPurse = auctionState?.teams.find(t => t.code === selectedTeam)?.remaining_purse_cr ?? 0;
 
@@ -75,7 +84,8 @@ export default function AuctionPage() {
             {([
               { id: 'console', label: 'Live Console', icon: '📺' },
               { id: 'results', label: 'Results', icon: '📊' },
-              { id: 'rag', label: 'AI Research', icon: '🔍' },
+              { id: 'scout', label: 'Player Scout', icon: '🔎' },
+              { id: 'rag', label: 'AI Research', icon: '🤖' },
             ] as { id: LeftTab; label: string; icon: string }[]).map(tab => (
               <button
                 key={tab.id}
@@ -96,39 +106,37 @@ export default function AuctionPage() {
           <div className="flex-1 flex flex-col overflow-hidden">
 
             {leftTab === 'console' && (
-              <>
-                {/* TOP HALF: nomination panel + controls */}
-                <div className="flex flex-1 overflow-hidden min-h-0">
-                  {/* Nomination */}
-                  <div className="flex-1 p-4 overflow-y-auto border-r border-slate-800">
-                    <NominationPanel
-                      player={currentPlayer}
-                      onNext={nextPlayer}
-                      loading={loading}
-                    />
-                  </div>
-                  {/* Simulation controls */}
-                  <div className="w-64 p-4 overflow-y-auto">
-                    <SimulationControls
-                      simStatus={simStatus}
-                      onSimulate={(mode: SimMode, nRuns: RunCount) => runSimulation(mode, nRuns)}
-                      onStop={stop}
-                      onReset={reset}
-                      disabled={loading}
-                    />
-                  </div>
+              <div className="flex flex-1 overflow-hidden min-h-0">
+                {/* Nomination */}
+                <div className="flex-1 p-4 overflow-y-auto border-r border-slate-800">
+                  <NominationPanel
+                    player={currentPlayer}
+                    onNext={nextPlayer}
+                    loading={loading}
+                  />
                 </div>
-
-                {/* BOTTOM HALF: inline results preview */}
-                <div className="h-[280px] border-t border-slate-800 p-4 overflow-y-auto bg-slate-900/30">
-                  <ResultsChart results={results} simStatus={simStatus} />
+                {/* Simulation controls */}
+                <div className="w-64 p-4 overflow-y-auto">
+                  <SimulationControls
+                    simStatus={simStatus}
+                    onSimulate={(mode: SimMode, nRuns: RunCount) => runSimulation(mode, nRuns)}
+                    onStop={stop}
+                    onReset={reset}
+                    disabled={loading}
+                  />
                 </div>
-              </>
+              </div>
             )}
 
             {leftTab === 'results' && (
               <div className="flex-1 p-5 overflow-y-auto">
                 <ResultsChart results={results} simStatus={simStatus} />
+              </div>
+            )}
+
+            {leftTab === 'scout' && (
+              <div className="flex-1 p-4 overflow-y-auto">
+                <PlayerScoutPanel teams={auctionState?.teams ?? []} />
               </div>
             )}
 
