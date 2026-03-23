@@ -38,6 +38,14 @@ export const getAuctionState = (): Promise<AuctionState> =>
 export const resetAuction = (): Promise<void> =>
   api.post('/auction/reset').then(r => r.data);
 
+/** Sell the current player to a franchise at a confirmed hammer price. */
+export const sellPlayer = (team_code: string, price_cr: number) =>
+  api.post('/auction/sell', { team_code, price_cr }).then(r => r.data);
+
+/** Mark the current player as unsold (no squad/purse change). */
+export const markPlayerUnsold = () =>
+  api.post('/auction/unsold').then(r => r.data);
+
 // ── Simulation ─────────────────────────────────────────────────────────────
 
 export const simulateNextPlayer = (n_runs: number) =>
