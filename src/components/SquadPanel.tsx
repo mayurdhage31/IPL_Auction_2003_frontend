@@ -1,11 +1,20 @@
-import type { TeamSquad, TeamInfo } from '../types';
+import { useState } from 'react';
+import type { TeamSquad, TeamInfo, UnsoldEntry } from '../types';
 
 interface Props {
   squad: TeamSquad | null;
   teams: TeamInfo[];
   selectedTeam: string;
   onSelectTeam: (code: string) => void;
+  unsoldHistory?: UnsoldEntry[];
 }
+
+const ROLE_COLORS: Record<string, string> = {
+  Batsman: 'text-amber-400',
+  Bowler: 'text-blue-400',
+  'All-Rounder': 'text-purple-400',
+  'Wicket Keeper': 'text-emerald-400',
+};
 
 const ROLE_DOT: Record<string, string> = {
   Batsman: 'bg-amber-400',
@@ -14,7 +23,9 @@ const ROLE_DOT: Record<string, string> = {
   'Wicket Keeper': 'bg-emerald-400',
 };
 
-export default function SquadPanel({ squad, teams, selectedTeam, onSelectTeam }: Props) {
+export default function SquadPanel({ squad, teams, selectedTeam, onSelectTeam, unsoldHistory = [] }: Props) {
+  const [unsoldExpanded, setUnsoldExpanded] = useState(false);
+
   return (
     <div className="flex flex-col h-full gap-4">
       {/* Team selector */}
@@ -82,7 +93,7 @@ export default function SquadPanel({ squad, teams, selectedTeam, onSelectTeam }:
                 Squad
               </span>
               <span className="text-xs text-slate-500">
-                {squad.squad.length} players
+                {squad.squad.length} / 25 players
               </span>
             </div>
 
@@ -119,6 +130,50 @@ export default function SquadPanel({ squad, teams, selectedTeam, onSelectTeam }:
           Loading squad…
         </div>
       )}
+
+      {/* Unsold history panel */}
+      <div className="border border-slate-700 rounded-xl bg-slate-800/30 overflow-hidden">
+        <button
+          className="w-full flex items-center justify-between px-3 py-2 hover:bg-slate-700/40 transition-colors"
+          onClick={() => setUnsoldExpanded(p => !p)}
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase">
+              Unsold
+            </span>
+            {unsoldHistory.length > 0 && (
+              <span className="text-[10px] font-bold bg-slate-600 text-slate-300 rounded-full px-1.5 py-0.5 leading-none">
+                {unsoldHistory.length}
+              </span>
+            )}
+          </div>
+          <span className="text-slate-500 text-[10px]">{unsoldExpanded ? '▲' : '▼'}</span>
+        </button>
+
+        {unsoldExpanded && (
+          <div className="px-2 pb-2 flex flex-col gap-1 max-h-48 overflow-y-auto">
+            {unsoldHistory.length === 0 ? (
+              <p className="text-center text-slate-600 text-xs py-3">No unsold players yet</p>
+            ) : (
+              [...unsoldHistory].reverse().map((p, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-slate-700/30"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-slate-300 truncate">{p.name}</p>
+                    <p className={`text-[10px] ${ROLE_COLORS[p.role] ?? 'text-slate-500'}`}>{p.role}</p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-[10px] text-slate-500 uppercase tracking-wide">{p.set_type}</p>
+                    <p className="text-[10px] text-slate-400">₹{p.base_price_cr}Cr</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

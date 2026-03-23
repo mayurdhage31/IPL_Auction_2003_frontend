@@ -1,3 +1,9 @@
+export interface PlayerOutcome {
+  status: 'sold' | 'unsold';
+  team_code?: string;
+  price_cr?: number;
+}
+
 export interface Player {
   name: string;
   role: string;
@@ -11,6 +17,13 @@ export interface Player {
   historical_prices?: PriceRecord[];
   index_in_pool: number;
   total_in_pool: number;
+  /** Present when this player has been explicitly sold or marked unsold in the live auction. */
+  outcome?: PlayerOutcome | null;
+}
+
+export interface SellPlayerRequest {
+  team_code: string;
+  price_cr: number;
 }
 
 export interface PriceRecord {
@@ -88,6 +101,19 @@ export interface SimulationStatus {
   mode: string;
 }
 
+export interface SetTotals {
+  marquee: number;
+  capped: number;
+  uncapped: number;
+}
+
+export interface UnsoldEntry {
+  name: string;
+  role: string;
+  set_type: string;
+  base_price_cr: number;
+}
+
 export interface AuctionState {
   current_player: Player | null;
   current_set: string;
@@ -95,6 +121,7 @@ export interface AuctionState {
   players_remaining: number;
   teams: TeamInfo[];
   simulation_running: boolean;
+  set_totals?: SetTotals;
 }
 
 export type SimMode = 'next_player' | 'set' | 'full_auction';
