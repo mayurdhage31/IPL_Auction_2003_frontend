@@ -44,6 +44,15 @@ export default function SimulationControls({ simStatus, elapsedMs = 0, onSimulat
         )}
       </div>
 
+      {/* Forecast-only disclaimer */}
+      <div className="flex items-start gap-1.5 bg-slate-800/60 border border-slate-700/50 rounded-lg px-2.5 py-2">
+        <span className="text-[9px] text-slate-600 mt-px shrink-0">ⓘ</span>
+        <p className="text-[9px] text-slate-600 leading-snug">
+          Simulations are <span className="text-slate-500 font-medium">statistical forecasts</span> using Monte Carlo sampling.
+          They do not affect live squad state, team purses, or player outcomes.
+        </p>
+      </div>
+
       {/* Progress bar — shown while running */}
       {isRunning && (
         <div className="rounded-lg bg-slate-800 border border-slate-700 p-2.5">

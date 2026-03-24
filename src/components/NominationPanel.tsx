@@ -37,6 +37,20 @@ const SET_LABEL: Record<string, string> = {
   accelerated: 'ACCELERATED',
 };
 
+const SET_PROGRESS_COLOR: Record<string, string> = {
+  marquee: 'bg-amber-500',
+  capped: 'bg-slate-400',
+  uncapped: 'bg-emerald-500',
+  accelerated: 'bg-purple-500',
+};
+
+const SET_DESCRIPTION: Record<string, string> = {
+  marquee: 'Star players & big names',
+  capped: 'Experienced IPL veterans',
+  uncapped: 'Rising talent & newcomers',
+  accelerated: 'Unsold players re-nominated',
+};
+
 export default function NominationPanel({ player, teams, onNext, onSell, onMarkUnsold, loading, setTotals }: Props) {
   // Live assignment state — reset whenever the nominated player changes
   const [sellTeam, setSellTeam] = useState<string>('');
@@ -121,28 +135,78 @@ export default function NominationPanel({ player, teams, onNext, onSell, onMarkU
 
   const busy = loading || actionLoading;
 
+  const setProgressPct = setTotal && setTotal > 0 && setIndex !== null
+    ? Math.round((setIndex / setTotal) * 100)
+    : 0;
+  const setProgressColor = SET_PROGRESS_COLOR[player.set_type] ?? 'bg-slate-400';
+  const setDescription = SET_DESCRIPTION[player.set_type] ?? '';
+  const isLastInSet = setIndex !== null && setTotal !== null && setIndex === setTotal;
+
   return (
     <div className="h-full flex flex-col">
-      {/* Section label + progress bar */}
+      {/* Section label + overall progress */}
       <div className="flex items-center justify-between px-4 pt-3 pb-2">
         <span className="text-[10px] font-semibold tracking-widest text-slate-500 uppercase">
           Live Nomination Console
         </span>
         <div className="flex items-center gap-3">
-          {/* Intra-set progress label */}
-          {setIndex !== null && setTotal !== null && (
-            <span className="text-[10px] text-slate-400 font-medium">
-              <span className="text-slate-600">{setLabel} set </span>
-              {setIndex}/{setTotal}
-            </span>
-          )}
           <span className="text-[10px] text-slate-500">
-            {player.index_in_pool + 1} / {player.total_in_pool}
+            Overall: {player.index_in_pool + 1} / {player.total_in_pool}
           </span>
           <div className="w-20 h-1 bg-slate-700 rounded-full overflow-hidden">
             <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
           </div>
         </div>
+      </div>
+
+      {/* ── Current Set awareness strip ───────────────────────────────────── */}
+      <div className="mx-4 mb-2 px-3 py-2 rounded-lg bg-slate-800/60 border border-slate-700/50">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className={`text-[10px] font-bold tracking-widest px-2.5 py-0.5 rounded-full ${setBadge}`}>
+            {setLabel} SET
+          </span>
+          {setDescription && (
+            <span className="text-[10px] text-slate-500">{setDescription}</span>
+          )}
+          {isLastInSet && (
+            <span className="ml-auto text-[10px] text-amber-400 font-semibold animate-pulse">
+              ← Last in set
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-300 ${setProgressColor}`}
+              style={{ width: `${setProgressPct}%` }}
+            />
+          </div>
+          {setIndex !== null && setTotal !== null ? (
+            <span className="text-[11px] font-semibold text-slate-300 shrink-0">
+              {setIndex} <span className="text-slate-600">/ {setTotal}</span>
+            </span>
+          ) : (
+            <span className="text-[10px] text-slate-600 shrink-0">— / —</span>
+          )}
+        </div>
+        {setTotals && (
+          <div className="flex items-center gap-3 mt-1.5">
+            {(['marquee', 'capped', 'uncapped'] as const).map(s => (
+              <span
+                key={s}
+                className={`text-[9px] ${
+                  player.set_type === s ? 'text-slate-300 font-semibold' : 'text-slate-600'
+                }`}
+              >
+                {SET_LABEL[s]}
+                {' '}
+                <span className={player.set_type === s ? 'text-slate-400' : 'text-slate-700'}>
+                  {setTotals[s]}
+                </span>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Main content card */}

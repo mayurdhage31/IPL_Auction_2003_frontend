@@ -88,13 +88,21 @@ export default function SquadPanel({ squad, teams, selectedTeam, onSelectTeam, u
 
           {/* Squad list */}
           <div className="flex-1 flex flex-col gap-1 overflow-y-auto min-h-0">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-0.5">
               <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
                 Squad
               </span>
               <span className="text-xs text-slate-500">
                 {squad.squad.length} / 25 players
               </span>
+            </div>
+            {/* Simulation boundary notice */}
+            <div className="flex items-start gap-1.5 bg-slate-800/50 border border-slate-700/50 rounded-lg px-2 py-1.5 mb-1">
+              <span className="text-[9px] text-slate-600 mt-px shrink-0">ⓘ</span>
+              <p className="text-[9px] text-slate-600 leading-snug">
+                Shows <span className="text-slate-500 font-medium">live sold players</span> only.
+                Monte Carlo simulations are <span className="text-slate-500 font-medium">forecast-only</span> — they do not modify squad or purse.
+              </p>
             </div>
 
             {squad.squad.length === 0 ? (
